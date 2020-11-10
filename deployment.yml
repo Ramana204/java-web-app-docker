@@ -2,34 +2,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    name: javawebapp
-    name: java-controller
+  name: javawebapp
 spec:
-  replicas: 1
+  selector:
+    matchLabels:
+      app: javawebapp
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
-        name: javawebapp
+        app: javawebapp
     spec:
       containers:
-      - image: ram204/java-web-app-docker
-        name: javawebapp
+      - name: javawebapp
+        image: ram204/java-web-app-docker
+        imagePullPolicy: Always
         ports:
         - name: javawebapp
-          containerPort: 8080  
+          containerPort: 8080
 ---
 # Node Port Service
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    name: javawebapp
   name: javawebapp
+  labels:
+    app: javawebapp
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 31200
   selector:
-    name: javawebapp
+    app: javawebapp
